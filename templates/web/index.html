@@ -1,0 +1,89 @@
+{% extends 'web/public/layout.html' %}
+{% block title %}
+    欢迎来到问卷调查
+{% endblock %}
+{% block page-content %}
+    <div class="row container">
+        <div class="col-lg-5">
+            <input type="text" v-model="search" class="form-control" placeholder="输入搜索关键字"/>
+        </div>
+    </div>
+    <hr>
+<template>
+    <el-table :data="tableData" style="width: 100%" @sort-change="ordering_data">
+        <el-table-column sortable="custom" v-for="(column, index) in tableColumn" :prop="column.prop"
+                         :label="column.label">
+            <template slot-scope="data">
+                <div v-html="data.row[column.prop]"></div>
+            </template>
+        </el-table-column>
+    </el-table>
+    <hr>
+<el-pagination
+  background
+  layout="prev, pager, next"
+  :total="count"
+  page-size="1"
+  @current-change = "changePage"
+>
+</el-pagination>
+</template>
+{% endblock %}
+
+{% block js %}
+    <script>
+        new Vue({
+            el: "#app",
+            data() {
+                return {
+                    tableColumn:[],
+                    tableData: [],
+                    search: "",
+                    count: 0,
+                    limit: 2,
+                    offset: 0,
+                    ordering: ""
+                }
+            },
+
+            mounted(){
+                this.initData()
+            },
+            methods:{
+                initData(){
+                    axios.get(`{{ BASE_URL }}/api/surveys/?search=${this.search}&limit=${this.limit}&offset=${this.offset}&ordering=${this.ordering}`).then(
+                        (response)=>{
+                            this.tableData = response.data.data.table_data
+                            this.tableColumn = response.data.data.table_column
+                            this.count = response.data.data.count
+                        }
+                    )
+                        .catch(function(error){
+                            alert(error)
+                        })
+                },
+                changePage(page){
+                    this.offset = (page-1) * this.limit
+                    this.initData()
+                },
+                ordering_data(column){
+                    if(column.order === null){
+                        this.ordering = ""
+                    }else {
+                        let order = column.order === "ascending" ? column.prop : `-${column.prop}`
+                        this.ordering = order
+                    }
+                    this.initData()
+                }
+            },
+            watch:{
+                search(){
+                    this.offset = 0
+                    this.initData()
+                }
+            }
+        })
+
+    </script>
+
+{% endblock %}

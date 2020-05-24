@@ -1,0 +1,68 @@
+{% extends "web/public/layout.html" %}
+{% block title %}
+    问卷调查报告
+{% endblock %}
+{% block import-js %}
+    <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+{% endblock %}
+{% block page-content %}
+    <div id="main" style="width: 600px;height:400px;"></div>
+
+
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        new Vue({
+            el: "#app",
+            data(){
+                return {
+                    x: [],
+                    y: []
+                }
+            },
+            mounted(){
+                this.initData()
+            },
+            methods: {
+                initData(){
+                    axios.get(`{{ BASE_URL }}/api/surveys/{{ pk }}/report/`).then(
+                        (response)=>{
+                            for(let index=0;index<response.data.data.length;index++){
+                                this.x.push(response.data.data[index]["question__title"])
+                                this.y.push(response.data.data[index]["score__sum"])
+                            }
+                                    // 基于准备好的dom，初始化echarts实例
+                            var myChart = echarts.init(document.getElementById('main'));
+
+                            // 指定图表的配置项和数据
+                            var option = {
+                                title: {
+                                    text: '调查结果统计'
+                                },
+                                tooltip: {},
+                                legend: {
+                                    data:['总分值']
+                                },
+                                xAxis: {
+                                    data: this.x
+                                },
+                                yAxis: {},
+                                series: [{
+                                    name: '总分值',
+                                    type: 'bar',
+                                    data: this.y
+                                }]
+                            };
+
+                            // 使用刚指定的配置项和数据显示图表。
+                            myChart.setOption(option);
+                        }
+                    )
+
+                }
+            }
+        })
+
+    </script>
+
+{% endblock %}

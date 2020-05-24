@@ -1,0 +1,19 @@
+{% extends 'web/public/base.html' %}
+{% block body %}
+    <div class="container">
+        <div id="app" class="panel panel-success">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    {% block title %}{% endblock %}
+                    <button style="margin-left: 40px" class="btn btn-default"><a href="{{ BASE_URL }}/">主页</a></button>
+                </div>
+            </div>
+            <div class="panel-body">
+                {% block page-content %}{% endblock %}
+            </div>
+            <div class="panel-footer">
+                    CopyRight ---2019
+            </div>
+        </div>
+    </div>
+{% endblock %}

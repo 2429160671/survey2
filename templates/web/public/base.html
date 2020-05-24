@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>问卷调查系统</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/element-ui.js"></script>
+    <script src="/static/js/axios.js"></script>
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/element-index.js"></script>
+    {% block import-js %}{% endblock %}
+    <style>
+        div.panel{
+            width: 95%;
+            margin-top: 30px;
+        }
+    </style>
+    {% block css%}{% endblock %}
+</head>
+<body>
+    {% block body%}{% endblock %}
+    {% block js %}{% endblock %}
+</body>
+</html>

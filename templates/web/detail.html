@@ -1,0 +1,99 @@
+{% extends 'web/public/layout.html' %}
+{% block title %}
+    请填写问卷调查
+{% endblock %}
+{% block page-content %}
+    <div class="container">
+        <el-input style="width:50%" v-model="unique_code" placeholder="请输入唯一码"></el-input>
+        <div style="padding-top: 10px;font-size: 15px">
+            <span style="color: red">{% verbatim %}{{ unique_code_error }}{% endverbatim %}</span>
+        </div>
+        <div style="padding-top: 10px" v-for="(item, index) in survey_templates">
+            <div>
+            <h3>{% verbatim %} {{ item.name }}问题{% endverbatim %}</h3>
+            </div>
+            <hr/>
+            <div>
+                <el-form label-width="400px" label-position="top">
+                    {% csrf_token %}
+                    <el-form-item v-for="(question, index) in item.questions" :label="question.title" :error="question.error">
+                        <el-input style="width: 50%" v-if="question.survey_type == 'suggest'" type="textarea" v-model="question.value"></el-input>
+                        <el-radio-group v-if="question.survey_type=='choice'" v-model="question.value">
+                            <el-radio v-for="(choice,index) in question.choices" :label="choice.id">
+                                {% verbatim %}{{ choice.title }}{% endverbatim %}
+                            </el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </div>
+        <el-button type="primary" @click="onSubmit">提交问卷</el-button>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+      new Vue({
+          "el": "#app",
+          data() {
+              return {
+                unique_code: '',
+                survey_templates: [],
+                unique_code_error: "",
+                radio: 1
+              }
+          },
+        mounted(){
+            this.initData()
+        },
+        methods: {
+          onSubmit() {
+              let vm = this
+              axios.post(`{{ BASE_URL }}/api/surveys/{{ pk }}/`,
+                      {
+                          "survey_templates": vm.survey_templates,
+                          "unique_code": vm.unique_code,
+                          "csrfmiddlewaretoken":  $("input[name='csrfmiddlewaretoken']").val(),
+                      }
+                    )
+                  .then(
+                      (response)=>{
+                          if(response.data.code === 1){
+                              alert("请检查参数")
+                            if(response.data.errors.unique_code){
+                                this.unique_code_error = response.data.errors.unique_code
+                            }
+                              let errors = response.data.errors.survey_templates
+                              if(errors != null)
+                              {
+                                  for(let i=0;i < errors.length;i++){
+                                      if(errors[i]["questions"]){
+                                          for(let j=0;j<errors[i]["questions"].length;j++){
+                                            this.survey_templates[i]["questions"][j].error = errors[i]['questions'][j]["value"]
+                                        }
+                                      }
+                                  }
+                              }
+                          }else{
+                            alert("提交成功！");
+                              location.reload()
+                          }
+                      }
+                  )
+            },
+            initData(){
+              // 初始化数据
+              axios.get(`{{ BASE_URL }}/api/surveys/{{ pk }}/`)
+                  .then(
+                      (response)=>{
+                          console.log(response.data)
+                          this.survey_templates = response.data.survey_templates
+                      }
+                  )
+            }
+        }
+      })
+
+    </script>
+{% endblock %}
